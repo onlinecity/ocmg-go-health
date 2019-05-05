@@ -40,7 +40,8 @@ steps:
   - '-c'
   - >-
     if [ "$TAG_NAME" ] ; then
-      curl -sf -o - -L https://github.com/tcnksm/ghr/releases/download/v0.12.1/ghr_v0.12.1_linux_amd64.tar.gz | tar xzf -;
+      curl -sf -o ghr_v0.12.1_linux_amd64.tar.gz -L https://github.com/tcnksm/ghr/releases/download/v0.12.1/ghr_v0.12.1_linux_amd64.tar.gz;
+      echo -n "471c2eb1aee20dedffd00254f6c445abb5eb7d479bcae32c4210fdcf036b2dce  ghr_v0.12.1_linux_amd64.tar.gz" | sha256sum -c - && tar xzf ghr_v0.12.1_linux_amd64.tar.gz;
       ghr_*/ghr -t $$GITHUB_TOKEN -u onlinecity -r ocmg-go-health $TAG_NAME dist;
     fi
 
