@@ -1,0 +1,13 @@
+.git
+.gitignore
+LICENSE
+VERSION
+README.md
+manifests
+.golangci.yaml
+.gitattributes
+.travis.yml
+cloudbuild.yaml
+Dockerfile
+Dockerfile.debian
+Dockerfile.alpine

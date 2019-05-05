@@ -1,0 +1,44 @@
+steps:
+
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'debian', '-f', 'Dockerfile.debian', '.']
+  waitFor: ['-']
+  id: debian
+
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'alpine', '-f', 'Dockerfile.alpine', '.']
+  waitFor: ['-']
+  id: alpine
+
+- name: 'gcr.io/cloud-builders/docker'
+  entrypoint: 'bash'
+  args:
+  - '-c'
+  - |
+    mkdir debian
+    mkdir alpine
+    id=$(docker create debian)
+    docker cp $id:/app/healthz debian/
+    docker rm -v $id
+    id=$(docker create alpine)
+    docker cp $id:/app/healthz alpine/
+    docker rm -v $id
+  waitFor: ['debian', 'alpine']
+  id: 'copy-artifacts'
+
+  # Create a github release and upload the artifacts with a go tool
+- name: 'gcr.io/cloud-builders/curl'
+  secretEnv: ['GITHUB_TOKEN']
+  entrypoint: 'bash'
+  args:
+  - '-c'
+  - >-
+    if [ "$TAG_NAME" ] ; then
+      curl -sf -o - -L https://github.com/tcnksm/ghr/releases/download/v0.12.1/ghr_v0.12.1_linux_amd64.tar.gz | tar xzf -;
+      ghr_*/ghr -t $$GITHUB_TOKEN -u onlinecity -r ocmg-go-health $TAG_NAME dist;
+    fi
+
+secrets:
+- kmsKeyName: projects/gatewayapi-212008/locations/global/keyRings/builder/cryptoKeys/builder
+  secretEnv:
+    GITHUB_TOKEN: "CiQAlT9vrJUW/X99VXf4Apc+n3ZIjNl2wL1yWvpalrBRXlB6kc4SUQA5Ot1jctaOFXfrQHk0gtbmvwLMk4IogbWoJzw0y968DzQhhQaCDphIUMyJahxVgqlOL5k1JJvanB424BTOpI5CLx7IqdzDh2BP/g7BATFKbQ=="

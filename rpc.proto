@@ -1,0 +1,49 @@
+syntax = "proto2";
+package oc.pb.rpc;
+
+message Exception {
+  required string message = 1;
+  optional uint32 code = 2;
+  repeated string variables = 3;
+  optional bytes incident_uuid = 4;
+  extensions 256 to 65535;
+}
+
+enum Encoding {
+  BOOL          = 1;
+  CHAR          = 2;
+  SIGNED_CHAR   = 3;
+  UNSIGNED_CHAR = 4;
+  INT8          = 5;
+  UINT8         = 6;
+  INT16         = 7;
+  UINT16        = 8;
+  INT32         = 9;
+  UINT32        = 10;
+  INT64         = 11;
+  UINT64        = 12;
+  FLOAT         = 13;
+  DOUBLE        = 14;
+  LONG_DOUBLE   = 15;
+  STRING        = 16;
+  PROTOBUF      = 17;
+}
+
+message Argument {
+  required Encoding type = 1;
+  optional string package = 2;
+  optional string message = 3;
+  optional bool repeated = 4;
+}
+
+message Procedure {
+  required string name = 1;
+  repeated Argument input = 2;
+  repeated Argument output = 3;
+}
+
+message Service {
+  required string name = 1;
+  required uint32 service_prefix = 2;
+  repeated Procedure procedures = 3;
+}

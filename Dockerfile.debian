@@ -1,0 +1,17 @@
+FROM golang:1.12-stretch
+ARG GOLANGCI_VERSION="1.16.0"
+ARG GOLANGCI_SHASUM="5343fc3ffcbb9910925f4047ec3c9f2e9623dd56a72a17ac76fb2886abc0976b"
+WORKDIR /app
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libzmq3-dev \
+    && wget -q https://github.com/golangci/golangci-lint/releases/download/v$GOLANGCI_VERSION/golangci-lint-$GOLANGCI_VERSION-linux-amd64.tar.gz \
+    && echo -n "$GOLANGCI_SHASUM  golangci-lint-$GOLANGCI_VERSION-linux-amd64.tar.gz" | shasum -c - \
+    && tar xzf golangci-lint-$GOLANGCI_VERSION-linux-amd64.tar.gz \
+    && rm golangci-lint-$GOLANGCI_VERSION-linux-amd64.tar.gz 
+COPY go.mod .
+COPY go.sum .
+RUN go mod download
+
+COPY . .
+RUN go build cmd/healthz/healthz.go
+RUN golangci-lint-$GOLANGCI_VERSION-linux-amd64/golangci-lint run
