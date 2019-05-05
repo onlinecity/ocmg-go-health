@@ -23,6 +23,12 @@ steps:
     id=$(docker create alpine)
     docker cp $id:/app/healthz alpine/
     docker rm -v $id
+    mkdir dist
+    tar czf dist/healthz-alpine.tar.gz alpine/
+    tar czf dist/healthz-debian.tar.gz debian/
+    cd dist
+    shasum healthz-alpine.tar.gz > healthz-alpine.tar.gz.sha
+    shasum healthz-debian.tar.gz > healthz-debian.tar.gz.sha
   waitFor: ['debian', 'alpine']
   id: 'copy-artifacts'
 
