@@ -8,6 +8,7 @@ RUN apt-get update \
     && echo -n "$GOLANGCI_SHASUM  golangci-lint-$GOLANGCI_VERSION-linux-amd64.tar.gz" | shasum -c - \
     && tar xzf golangci-lint-$GOLANGCI_VERSION-linux-amd64.tar.gz \
     && rm golangci-lint-$GOLANGCI_VERSION-linux-amd64.tar.gz 
+COPY .netrc /root/.netrc
 COPY go.mod .
 COPY go.sum .
 RUN go mod download
