@@ -1,13 +1,24 @@
 steps:
 
+- name: gcr.io/cloud-builders/gcloud
+  args:
+  - kms
+  - decrypt
+  - --ciphertext-file=.netrc.enc
+  - --plaintext-file=.netrc
+  - --location=global
+  - --keyring=builder
+  - --key=builder
+  id: kms
+
 - name: 'gcr.io/cloud-builders/docker'
   args: ['build', '-t', 'debian', '-f', 'Dockerfile.debian', '.']
-  waitFor: ['-']
+  waitFor: ['kms']
   id: debian
 
 - name: 'gcr.io/cloud-builders/docker'
   args: ['build', '-t', 'alpine', '-f', 'Dockerfile.alpine', '.']
-  waitFor: ['-']
+  waitFor: ['kms']
   id: alpine
 
 - name: 'gcr.io/cloud-builders/docker'
