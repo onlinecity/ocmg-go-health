@@ -22,25 +22,36 @@ steps:
   id: alpine
 
 - name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'debian-buster', '-f', 'Dockerfile.debian-buster', '.']
+  waitFor: ['kms']
+  id: debian-buster
+
+- name: 'gcr.io/cloud-builders/docker'
   entrypoint: 'bash'
   args:
   - '-c'
   - |
     mkdir debian
     mkdir alpine
+    mkdir debian-buster
     id=$(docker create debian)
     docker cp $id:/app/healthz debian/
     docker rm -v $id
     id=$(docker create alpine)
     docker cp $id:/app/healthz alpine/
     docker rm -v $id
+    id=$(docker create debian-buster)
+    docker cp $id:/app/healthz debian-buster/
+    docker rm -v $id
     mkdir dist
     tar czf dist/healthz-alpine.tar.gz alpine/
     tar czf dist/healthz-debian.tar.gz debian/
+    tar czf dist/healthz-debian-buster.tar.gz debian-buster/
     cd dist
     shasum healthz-alpine.tar.gz > healthz-alpine.tar.gz.sha
     shasum healthz-debian.tar.gz > healthz-debian.tar.gz.sha
-  waitFor: ['debian', 'alpine']
+    shasum healthz-debian-buster.tar.gz > healthz-debian-buster.tar.gz.sha
+  waitFor: ['debian', 'alpine', 'debian-buster']
   id: 'copy-artifacts'
 
   # Create a github release and upload the artifacts with a go tool
