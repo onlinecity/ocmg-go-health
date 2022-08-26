@@ -27,6 +27,11 @@ steps:
   id: debian-buster
 
 - name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'debian-bullseye', '-f', 'Dockerfile.debian-bullseye', '.']
+  waitFor: ['kms']
+  id: debian-bullseye
+
+- name: 'gcr.io/cloud-builders/docker'
   entrypoint: 'bash'
   args:
   - '-c'
@@ -43,15 +48,20 @@ steps:
     id=$(docker create debian-buster)
     docker cp $id:/app/healthz debian-buster/
     docker rm -v $id
+    id=$(docker create debian-bullseye)
+    docker cp $id:/app/healthz debian-bullseye/
+    docker rm -v $id
     mkdir dist
     tar czf dist/healthz-alpine.tar.gz alpine/
     tar czf dist/healthz-debian.tar.gz debian/
     tar czf dist/healthz-debian-buster.tar.gz debian-buster/
+    tar czf dist/healthz-debian-bullseye.tar.gz debian-bullseye/
     cd dist
     shasum healthz-alpine.tar.gz > healthz-alpine.tar.gz.sha
     shasum healthz-debian.tar.gz > healthz-debian.tar.gz.sha
     shasum healthz-debian-buster.tar.gz > healthz-debian-buster.tar.gz.sha
-  waitFor: ['debian', 'alpine', 'debian-buster']
+    shasum healthz-debian-bullseye.tar.gz > healthz-debian-bullseye.tar.gz.sha
+  waitFor: ['debian', 'alpine', 'debian-buster', 'debian-bullseye']
   id: 'copy-artifacts'
 
   # Create a github release and upload the artifacts with a go tool
